@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Sep 23 18:50:03 2023
+
+@author: Carlos Caicedo-Montoya
+"""
+
+
+
+import gzip
+import shutil
+import os
+import ncbi_genome_download as ngd
+from ncbi_genome_download import NgdConfig
+print(NgdConfig.get_choices('groups'))
+print(NgdConfig.get_choices('file_formats'))
+print(NgdConfig.get_choices('assembly_levels'))
+print(NgdConfig.get_choices('section'))
+print(NgdConfig.get_choices('refseq_categories'))
+
+
+# Establecer los argumentos para la descarga
+kwargs1 = {
+    'groups': 'bacteria',     
+    'section': 'refseq',      
+    'assembly_levels': 'all',
+    'progress_bar': True,
+    'file_formats': 'fasta',  # Formato FASTA
+    'output': os.getcwd(), # Directorio de salida
+    #"dry_run":True,   
+    "genera":"Nocardiopsis"}
+ngd.download(**kwargs1)
+
+#%%
+
+# Paths for the directories
+source_folder_path = os.path.join(os.getcwd(), "refseq", "bacteria")
+destination_folder_path = os.path.join(os.getcwd(), "fna_Nocardiopsis")
+
+# Create the destination folder if it doesn't exist
+if not os.path.exists(destination_folder_path):
+    os.makedirs(destination_folder_path)
+
+# Navigate through the subdirectories
+for current_folder, subfolders, files in os.walk(source_folder_path):
+    for file in files:
+        # Check if the file is a .gz compressed file
+        if file.endswith(".gz"):
+            # Full path to the .gz file
+            gz_path = os.path.join(current_folder, file)
+            
+            # Path where the decompressed file will be saved
+            decompressed_path = os.path.join(destination_folder_path, file[:-3])  # Remove the .gz extension
+
+            # Decompress the file
+            with gzip.open(gz_path, 'rb') as gz_file:
+                with open(decompressed_path, 'wb') as destination_file:
+                    shutil.copyfileobj(gz_file, destination_file)
+
+print("Files successfully extracted!")
+
+
+print("¡Archivos extraídos con éxito!")
+
+
